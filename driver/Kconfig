@@ -1,0 +1,23 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/kconfig-language.txt.
+#
+
+# in order to add a menu item to "make Menuconfig"   edit the
+#   <OCTEONTX_SDK/linux/kernel/linux/drivers/Kconfig and place
+#
+#   source "drivers/fsdriver/Kconfig"
+#
+#  as the last line before the "endmenu" line (around last line in the file:
+
+
+
+
+
+config FSDRIVER
+	tristate "FSDriver - attempt to build in kernel"
+#	depends on ARM
+#        default y if ARM
+	help
+	  Frank Smith test Driver System 
+

@@ -1,0 +1,49 @@
+http://stackoverflow.com/questions/11710022/adding-new-driver-code-to-linux-source-code
+
+
+
+To cross compile your own driver in the arm architecture you have to follow some steps as mentioned below.
+
+1) Create a directory like my_drvr inside drivers(which is in the Linux source code) for your driver and put 
+   your driver (my_driver.c) file inside this directory. It will looks like 
+   /linux_source_code/drivers/my_drvr/my_driver.c
+
+2) Create one Makefile inside your driver directory (using vi any editor) and inside this 
+   put obj-$(CONFIG_MY_DRIVER) += my_driver.o and save this file. This will appears like
+  /linux_source_code/drivers/my_drvr/Makefile
+
+3)Create one Kconfig file inside your driver directory (using vi any editor) and inside this put
+     config MY_DRIVER
+           tristate "my driver" //gives your driver description like vendor name etc.
+           depends on ARM
+           default y if ARM
+     help
+            my driver module.
+
+4) Save this file, this will appears like /linux_source_code/drivers/my_drvr/Kconfig
+
+5) Add both Makefile and Kconfig file in the Linux source drivers Makefile and Kconfig file 
+   which are at /linux_source_code/drivers/Makefile and /linux_source_code/drivers/Kconfig
+
+6) In the Makefile add below in last line
+
+     obj-y    += my_drvr/ 
+     or
+     obj-$(CONFIG_MY_DRIVER)   += my_drvr/
+
+7) In Kconfig file add below in last line
+       source "drivers/my_drvr/Kconfig"
+
+8) Finally have to add Kconfig file into architecture specific config file which will be at 
+   kernel_source/arch/arm/configs/--defconfig in this add below line in the last
+
+       CONFIG_MY_DRIVER=y
+ 
+Note:- Last step will differ according to your architecture, so that you have take care. Now you can compile your driver by using make command. (eg: sun7i_defconfig)
+
+
+
+
+
+
+

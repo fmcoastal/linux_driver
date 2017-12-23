@@ -1,0 +1,99 @@
+ cd <SDK>/linux/kernel/linux/drivers
+ mkdir fdriver
+ cp -r /scratch/fsdriver/fdriver fdriver/.
+ 
+ edit Makefile:
+   add line at end of file
+      obj-y    += fdriver
+ 
+ edit Kconfig
+     source "drivers/fdriver/Kconfig"
+ 
+
+
+
+
+Instructions:
+
+ cd /depot/fdriver
+ make
+ cd example
+ make
+ cd ..
+ insmod fdriver.ko
+ mknod /dev/fdriver c 247 0
+ chmod a+w /dev/fdriver
+ cd example
+ ./main
+
+
+
+To remove and Re-install
+ rmmod fdriver
+ insmod fdriver.ko
+
+
+WARNING!! check that when the driver is re-installed, the Major Revision is stiil the same. To Check:
+  [root@woof ~]# cat /proc/devices
+
+
+If the number is not 247, you will need to create a new node with the appropriate Major Revision Number.
+
+To see what number is assigneed to the fdriver node. 
+
+  [root@woof ~]# ls -la /dev/fdriver
+  crw-rw-rw- 1 root root 247, 0 Jan  3 17:42 /dev/fdriver
+  [root@woof ~]#
+
+
+Below is notes if you want to create multiple mount points to the same driver. 
+--------------------------------------------
+
+
+#!/bin/sh
+module="fdriver"
+device="fdriver"
+mode="664"
+
+# invoke insmod with all arguments we were passed
+# and use a pathname, as newer modutils don't look in . by default
+/sbin/insmod -f ./$module.o $* || exit 1
+
+# remove stale nodes
+rm -f /dev/${device}[0-3]
+
+
+For AWK  $1 is the first argument on the line $2 the second, ...
+awk  '/fdriver/'   /proc/devices
+awk  '/fdriver/  {print $1}'  /proc/devices
+
+
+
+major=`awk "\\$2==\"$module\" {print \\$1}" /proc/devices`
+
+
+
+mknod /dev/${device}0 c $major 0
+mknod /dev/${device}1 c $major 1
+mknod /dev/${device}2 c $major 2
+mknod /dev/${device}3 c $major 3
+
+# from: http://www.xml.com/ldd/chapter/book/ch03.html 
+
+## give appropriate group/permissions, and change the group.
+## Not all distributions have staff; some have "wheel" instead.
+#group="staff"
+#grep '^staff:' /etc/group > /dev/null || group="wheel"
+#
+#chgrp $group /dev/${device}[0-3]
+#chmod $mode /dev/${device}[0-3]
+
+
+
+##!/bin/bash
+
+#rmmod fdriver
+#insmod fdriver
+#rm /dev/fdriver
+#mknod /dev/fdriver c 249 0
+#chmod a+w /dev/fdriver

@@ -1,0 +1,5 @@
+mkdir -p common
+cd common
+ln -s ../driver/fdriver_ioctl.h  .
+cd ..
+
