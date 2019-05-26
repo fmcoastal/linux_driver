@@ -21,6 +21,7 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/moduleparam.h>
+#include <linux/uaccess.h>       // for def of copy_to_user /copy_from_user
 #ifdef FS_DMA
 #include <linux/pci.h>          // for devices mapped by ecams.
 #endif
