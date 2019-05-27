@@ -1,19 +1,158 @@
- cd <SDK>/linux/kernel/linux/drivers
- mkdir fdriver
- cp -r /scratch/fsdriver/fdriver fdriver/.
+****************************************************************
+   Use at your own risk. Last time built was against 4.14.76
+
+two pieces of code:
+    a) driver code
+    b) example code of how to access driver
+
+Driver can:
+    pass in and out variables by echoing to /proc/fdriver
+
+
+
+******************************************************************
  
- edit Makefile:
-   add line at end of file
+--- Get the Source code and configure for building the kernel. ---
+
+
+1) Download the source code from Get the source code from github
+
+  $> mkdir /scratch
+  $> cd scratch
+  $> git clone https://github.com/fmcoastal/linux_driver.git fsdriver
+
+2) Environment.
+   There are two mechanisms for configuring the build enviorment
+
+  (opt1) Create a link in the <Linux Kernel>/drivers directory to 
+         the Github download location. 
+
+   $> cd <LINUX_KERNEL>/drivers
+   $> ln -s /scratch/fsdriver/driver fdriver
+   
+
+  (opt2) manually copy the files into the <Linux Kernel>/Driver 
+         Directory
+
+   $> cd <LINUX KERNEL>/drivers
+   $> mkdir fdriver
+   $> cp -r /scratch/fsdriver/fdriver fdriver/.
+
+3) finish the configuration so building the kernel or modules 
+   will build your driver. 
+ 
+
+ 3.1 edit the <LINUX KERNEL>/drivers Makefile
+
+   $> cd <LINUX KERNEL>/drivers
+   $> vim Makefile
+
+   add the line to the end of the Makefile 
+
       obj-y    += fdriver
- 
- edit Kconfig
+
+   save changes and exit
+
+ 3.2 edit the <LINUX KERNEL>/drivers/Kconfig file
+
+   $> cd <LINUX KERNEL>/drivers
+   $> vim Kconfig
+
+   at the end of the file, but above the "endmenu" line,
+   add the following:
+
      source "drivers/fdriver/Kconfig"
  
+   save changes and exit
+
+4) add fdriver to you kernel as a loadable module, and build 
+
+ 4.1 Make sure your ARCH and CROSS_COMPILE environment variables
+     are set up correctly. For Me:
+
+   $> echo $ARCH
+   arm64
+   $> echo $CROSS_COMPILE
+   /sdk/SDK106/toolchain/marvell-tools-215/bin/aarch64-marvell-linux-gnu-
+   
+ 4.2 Go the the <LINUX_KERNEL> directory, 
+ 4.3 run  "make menuconfig"  
+ 4.4 find the fdriver entry (either search or look under 
+     "Device Drivers -->". should be at the bottom of the
+     menu. Should look like:
+
+    <M> FSDriver - attempt to build in kernel 
+
+ 4.5 Exit and save your configuration changes.
+
+5) Build your kernel 
+
+ 5.1 Make sure your ARCH and CROSS_COMPILE environment variables
+     are set up correctly. For Me:
+
+   $> echo $ARCH
+   arm64
+   $> echo $CROSS_COMPILE
+   /sdk/SDK106/toolchain/marvell-tools-215/bin/aarch64-marvell-linux-gnu-
+   
+ 5.2 Go the the <LINUX_KERNEL> directory, 
+ 5.3 run  "make"  
+ 
+   $> make
+
+
+6) Make your kernel Modules - for making driver changes that do not 
+   effect your kernel-driver interface.
+
+   6.1 Make sure your ARCH and CROSS_COMPILE environment variables
+     are set up correctly. For Me:
+
+   $> echo $ARCH
+   arm64
+   $> echo $CROSS_COMPILE
+   /sdk/SDK106/toolchain/marvell-tools-215/bin/aarch64-marvell-linux-gnu-
+   
+ 6.2 Go the the <LINUX_KERNEL> directory, 
+ 6.3 Create an output directory to place the build results. 
+
+     $> mkdiri -p  /scratch/fsdriver/target
+
+ 6.3 run  "make modules INSTALL_MOD_PATH=<your location> "  
+ 
+     $> make modules_install INSTALL_MOD_PATH=/scratch/fsdriver/target
+     
+
+7) Transfer Linux Image and modules to your target system and boot.
+
+   <Beyond the scope of this document>
+
+8) Build example app to talk to driver.
+
+   $> cd /scratch/fsdriver/example
+   $> make
+
+   the file "main" will be created in your folder.
+   you need to install the driver before the example program will run 
+
+-------  need to test these Items ----
+
+
+9) Install the driver  - you must have root priviledges
+
+  $> insmod fdriver.ko
+  $> mknod /dev/fdriver c 247 0
+  $> chmod a+w /dev/fdriver
+ 
+10) Run the program.
 
 
 
-
-Instructions:
+*************************************************************
+*************************************************************
+****  Raw notes frome here down                         *****
+***   but there is some pretty interesting stuff        *****
+*************************************************************
+Simple Instructions:
 
  cd /depot/fdriver
  make
