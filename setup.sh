@@ -1,4 +1,7 @@
 #!/bin/bash
+# this shell scripts will place the "fsdriver files" in the kernel Directory, and modify 
+#  the dirvers/kconfig file to get the driver to be automatically built with the kernel.
+# 
 
 BASE_DIR=/home/fsmith/marvell/sdk
 SDK_DIR=PR2003
