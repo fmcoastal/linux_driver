@@ -32,26 +32,27 @@ if [ "$1" == "remove" ] ; then
     Banner  "Remove $DRIVER_NAME "
 
 #  check what is in Kconfig File
-    PRESENT=$( cat $LINUX_DIR/drivers/Kconfig | grep -i "drivers/$DRIVER_NAME"   )
+    PRESENT=$( cat $LINUX_DIR/drivers/Kconfig | grep -i "drivers/$DRIVER_NAME/Kconfig"   )
 #    echo "PRESENT: $PRESENT"
     if [ "$PRESENT" == "" ] ; then
-        Banner " Nothing to Remove: source \"drivers/$DRIVER_NAME\" not found in Kconfig"
+        Banner " Nothing to Remove: source \"drivers/$DRIVER_NAME/Kconfig\" not found in Kconfig"
     else
 
-        Banner " remove   \"source \"drivers/$DRIVER_NAME\"   from Kconfig" 
+        Banner " remove   \"source \"drivers/$DRIVER_NAME/Kconfig\"   from Kconfig" 
 #reference:
 #  https://stackoverflow.com/questions/5410757/delete-lines-in-a-text-file-that-contain-a-specific-string
 #  sed -i.bak '/pattern to match/d' ./infile
         Banner "Before"
         tail -n 10  $LINUX_DIR/drivers/Kconfig 
 
-        echo "sed -i.bak '/source \"drivers\/fsdriver\"/d' $LINUX_DIR/drivers/Kconfig"
-        sed -i.bak '/source \"drivers\/fsdriver\"/d' $LINUX_DIR/drivers/Kconfig
+        echo "sed -i.bak '/source \"drivers\/fsdriver\/Kconfig\"/d' $LINUX_DIR/drivers/Kconfig"
+        sed -i.bak '/source \"drivers\/fsdriver\/Kconfig\"/d' $LINUX_DIR/drivers/Kconfig
 
         Banner "After: "
         tail -n 10  $LINUX_DIR/drivers/Kconfig 
     fi
 
+#Remove the Driver Directory
     if [  -d $TARGET_DIR ] ; then
         Banner " removing TARGET_DIR "
         echo "rm -rf  $BASE_DIR/$SDK_DIR/$DEVICE_DIR/build/linux-custom/drivers/$DRIVER_NAME"
@@ -83,7 +84,7 @@ echo "ls -la $TARGET_DIR"
 ls -la $TARGET_DIR
 
 Banner  "Add dirver to make menumenuconfig system"
-PRESENT=$( cat $LINUX_DIR/drivers/Kconfig | grep -i "drivers/$DRIVER_NAME"   )
+PRESENT=$( cat $LINUX_DIR/drivers/Kconfig | grep -i "drivers/$DRIVER_NAME/Kconfig"   )
 if [ "$PRESETN" == "" ] ; then
    Banner " adding  \"source \"drivers/$DRIVER_NAME\"   to Kconfig" 
 #reference:
@@ -97,15 +98,15 @@ if [ "$PRESETN" == "" ] ; then
    Banner "Before"
    tail -n 10  $LINUX_DIR/drivers/Kconfig 
 
-   echo "sed -i.bak  '/^endmenu/isource \"drivers\/fsdriver\"' $LINUX_DIR/drivers/Kconfig"
-   sed -i.bak  '/^endmenu/isource \"drivers\/fsdriver\"' $LINUX_DIR/drivers/Kconfig
+   echo "sed -i.bak  '/^endmenu/isource \"drivers\/fsdriver\/Kconfig\"' $LINUX_DIR/drivers/Kconfig"
+   sed -i.bak  '/^endmenu/isource \"drivers\/fsdriver\/Kconfig\"' $LINUX_DIR/drivers/Kconfig
 
    Banner "After"
    tail -n 10  $LINUX_DIR/drivers/Kconfig 
 
 else
 
-   Banner " \'source \"dirvers/$DRIVER_NAME\"\' already in Kconfig "
+   Banner " \'source \"dirvers/$DRIVER_NAME/Kconfig\"\' already in Kconfig "
 fi
 
 

@@ -115,7 +115,7 @@ Driver can:
  6.2 Go the the <LINUX_KERNEL> directory, 
  6.3 Create an output directory to place the build results. 
 
-     $> mkdiri -p  /scratch/fsdriver/target
+     $> mkdir -p  /scratch/fsdriver/target
 
  6.3 run  "make modules INSTALL_MOD_PATH=<your location> "  
  
