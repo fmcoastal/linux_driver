@@ -29,17 +29,22 @@
 #include <asm/uaccess.h>        // for copy_from_user()
 #include <asm/io.h>             // for ioremap().....
 
+#include "fdriver.h"
 #include "fdriver_device.h"    // device Structure
 #include "fdriver_procfs.h"
+#include "fdriver_sysfs.h"
 #include "fdriver_ioctl.h"     // for IOCTL functions
 //#include "../common/fdriver_ioctl.h"     // for IOCTL functions
 
 
+fdriver_data  g_drv_dat = {0};   // garbage can of variable data.
 
 
-static dev_t first;       // Global variable for the first device number
-static struct cdev c_dev; // Global variable for the character device structure
-static struct class *cl;  // Global variable for the device class
+//static dev_t first;       // Global variable for the first device number
+//static struct cdev c_dev; // Global variable for the character device structure
+//static struct class *cl;  // Global variable for the device class
+//static struct device * pfdriver_device; // global driver to save the pointer to the "struct Device"
+
 
 #define DRV_BUFFER_SZ 1024
 static char g_DrvBuffer[DRV_BUFFER_SZ];
@@ -313,36 +318,37 @@ static int __init fdriver_init(void)
 // you will need to execute  mknod  /dev/fdevice1 c 247 1
 // you will need to execute  mknod  /dev/fdevice2 c 247 0
 // you will need to execute chmod a+w /dev/fdevice*
-    if (alloc_chrdev_region(&first, 0, NUMBER_OF_INSTANCES, "fsdriver") < 0)
+    if (alloc_chrdev_region(&(g_drv_dat.first), 0, NUMBER_OF_INSTANCES, "fsdriver") < 0)
     {
       return -1;
     }
-    printk(KERN_INFO "  <Major, Minor>: <%d, %d>\n", MAJOR(first), MINOR(first));
+    printk(KERN_INFO "  <Major, Minor>: <%d, %d>\n", MAJOR(g_drv_dat.first), MINOR(g_drv_dat.first));
 
-    if ((cl = class_create(THIS_MODULE, "fschardrv")) == NULL)
+    if ((g_drv_dat.cl = class_create(THIS_MODULE, "fschardrv")) == NULL)
     {
-        unregister_chrdev_region(first, 1);
+        unregister_chrdev_region(g_drv_dat.first, 1);
         printk(KERN_INFO " fsdriver: failed class_create\n");
         return -2;
     }
 
 //Put this in a loop  (NUMBER_OF_INSTANCES)w/
 //device_create(cl, NULL, MKNOD(MAJOR(first), MINOR(first) + i), NULL, "mynull%d", i);
-  if (device_create(cl, NULL, first, NULL, "myfsdriver") == NULL)
+  g_drv_dat.pdevice = device_create(g_drv_dat.cl, NULL, g_drv_dat.first, NULL, "myfsdriver");
+  if ( g_drv_dat.pdevice  == NULL)
   {
-    class_destroy(cl);
-    unregister_chrdev_region(first, 1);
+    class_destroy(g_drv_dat.cl);
+    unregister_chrdev_region(g_drv_dat.first, 1);
     printk(KERN_INFO " fsdriver: failed device_create\n");
     return -3;
   }
 
-  cdev_init(&c_dev, &fdriver_fops);
+  cdev_init(&g_drv_dat.c_dev, &fdriver_fops);
 
-  if (cdev_add(&c_dev, first, 1) == -1)
+  if (cdev_add(&(g_drv_dat.c_dev), g_drv_dat.first, 1) == -1)
   {
-    device_destroy(cl, first);
-    class_destroy(cl);
-    unregister_chrdev_region(first, 1); 
+    device_destroy(g_drv_dat.cl, g_drv_dat.first);
+    class_destroy(g_drv_dat.cl);
+    unregister_chrdev_region(g_drv_dat.first, 1); 
     printk(KERN_INFO " fsdriver: failed cdev_add\n");
     return -4;
   }
@@ -354,11 +360,23 @@ static int __init fdriver_init(void)
      goto procfs_fail;
   }
 
+  ret = fdriver_init_sysfs( &g_drv_dat );
+  if (ret)
+  {  
+     goto sysfs_fail;
+  }
+
+ 
+
+
 // init data structures
   memset(g_DrvBuffer,0,DRV_BUFFER_SZ);
   g_DrvBufferSz = 0; 
 
 return 0;
+
+sysfs_fail:
+   fdriver_remove_sysfs();
 
 procfs_fail:
    // fail need to clean up the rest of the items?
@@ -379,13 +397,12 @@ static void __exit fdriver_exit(void)
     // remove the entries in /proc
     fsdriver_remove_procfs();
 
-    cdev_del(&c_dev);
+    cdev_del(&(g_drv_dat.c_dev));
 // need a loop here (NUMBER_OF_INSTANCES)
-    device_destroy(cl, first);
+    device_destroy(g_drv_dat.cl, g_drv_dat.first);
 
-    class_destroy(cl);
-    unregister_chrdev_region(first, 3);
-
+    class_destroy(g_drv_dat.cl);
+    unregister_chrdev_region(g_drv_dat.first, 3);
 
 
 }
@@ -395,7 +412,6 @@ static void __exit fdriver_exit(void)
 
 
 module_init(fdriver_init);
-
 module_exit(fdriver_exit);
 
 
