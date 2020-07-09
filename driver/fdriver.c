@@ -394,6 +394,10 @@ static void __exit fdriver_exit(void)
 
 
     printk(KERN_INFO "fdriver_exit\n");
+
+    // remove the sysfs variables
+    fdriver_remove_sysfs();
+
     // remove the entries in /proc
     fsdriver_remove_procfs();
 
