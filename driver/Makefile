@@ -11,7 +11,8 @@ ifneq (${KERNELRELEASE},)
 	obj-m := $(DRIVER_KMOD).o
 $(DRIVER_KMOD)-y := fdriver.o \
 		fdriver_debug.o \
-		fdriver_procfs.o
+		fdriver_procfs.o \
+		fdriver_sysfs.o
 # Otherwise we were called directly from the command line.
 # Invoke the kernel build system.
    EXTRA_CFLAGS += -DFS_DEBUG
